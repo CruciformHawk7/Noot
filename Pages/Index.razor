@@ -1,0 +1,137 @@
+﻿@page "/"
+@page "/{AnyPath}"
+@using Noot.Components;
+@using Controllers;
+@using Models;
+
+<NavMenu AddClicked="AddNote" @bind-SearchText="@SearchText" />
+
+<section class="mobile-nav">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="arrow-back">
+        <path fill="currentColor" 
+                d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z">
+        </path>
+    </svg>
+    <div class="logo logo-hamboiga">
+        <svg width="36px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+            <g class="fa-group">
+                <path fill="#ffef00" 
+                    d="M448 352H336a16 16 0 0 0-16 16v112H24a23.94 23.94 0 0 1-24-23.88V56a23.94 23.94 0 0 1 23.88-24H424a23.94 23.94 0 0 1 24 23.88V352z" 
+                    class="fa-secondary">
+                </path>
+                <path fill="#ddcd00" d="M320 480V368a16 16 0 0 1 16-16h112v6.1a23.9 23.9 0 0 1-7 16.9l-98 98a24 24 0 0 1-17 7z" 
+                    class="fa-primary">
+                </path>
+            </g>
+        </svg> Noot.
+    </div>
+    <button class="add-btn add-ham" @onclick="AddNote">
+        <div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" width="15px">
+                <path fill="#000" 
+                    d="M376 232H216V72c0-4.42-3.58-8-8-8h-32c-4.42 0-8 3.58-8 8v160H8c-4.42 0-8 3.58-8 8v32c0 4.42 3.58 8 8 8h160v160c0 4.42 3.58 8 8 8h32c4.42 0 8-3.58 8-8V280h160c4.42 0 8-3.58 8-8v-32c0-4.42-3.58-8-8-8z">
+                </path>
+            </svg>
+            <div>Add a note</div>
+        </div>
+    </button>
+    <div>
+        Login
+    </div>
+</section>
+
+@if (NotesController.GetAllNotes().Count == 0 && Notes.Count == 0) { 
+    <div style="display: flex; justify-content: center; align-content: center; margin-top: 5rem;">
+    <h2 style="margin-right: 10px">
+        You don't have any notes. 
+    </h2>
+    <button class="add-btn add-ham" @onclick="AddNote">
+        <div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" width="15px">
+                <path fill="#000" 
+                    d="M376 232H216V72c0-4.42-3.58-8-8-8h-32c-4.42 0-8 3.58-8 8v160H8c-4.42 0-8 3.58-8 8v32c0 4.42 3.58 8 8 8h160v160c0 4.42 3.58 8 8 8h32c4.42 0 8-3.58 8-8V280h160c4.42 0 8-3.58 8-8v-32c0-4.42-3.58-8-8-8z">
+                </path>
+            </svg>
+            <div>Create new?</div>
+        </div>
+    </button>
+    </div>
+} else if(Notes.Count == 0) {
+    <h2 style="text-align: center; margin-top: 5rem;">No matches found</h2>
+}
+
+<section class="grid-body">
+    @foreach (var note in Notes) {
+        <Noot.Components.NoteComponent 
+            Title="@note.Title"
+            Delete="@(() => { DeleteNote(@note.Id); })" Edit="@(() => { EditNote(@note.Id); })">
+            @note.Notes
+        </Noot.Components.NoteComponent>
+    }
+</section>
+
+<AddNote Visible="@AddBoxVisibility" BoundNote="@NewNote" CloseClicked="@AddValue"/>
+
+@code {
+
+    List<Note> Notes = new List<Note>();
+
+    private string _search = String.Empty;
+
+    public bool AddBoxVisibility = false;
+    private bool isEdit;
+
+    //private bool isSearch;
+
+    private Note NewNote = new Note();
+
+    [Parameter]
+    public string AnyPath { get; set; }
+
+    [Parameter]
+    public string SearchText { get { return _search; }
+        set {
+            _search = value;
+            //isSearch = String.IsNullOrEmpty(value);
+            Notes = NotesController.GetAllNotes()
+                    .FindAll( e => e.Title.Contains(value, StringComparison.OrdinalIgnoreCase) 
+                                || e.Notes.Contains(value, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+    
+    protected override void OnInitialized(){
+        //Test();
+        Notes = NotesController.GetAllNotes();
+    }
+
+    void Test() {
+        for(int i = 0; i<10; i++) {
+            NotesController.CreateNewNote($"Test {i}", $"Test {i}");
+        }
+    }
+
+    void AddValue() {
+        if (isEdit) 
+            NotesController.EditNote(NewNote.Id, NewNote.Title, NewNote.Notes);
+        else {
+            NotesController.CreateNewNote(NewNote.Title, NewNote.Notes);
+        }
+        NewNote = new Note();
+        AddBoxVisibility = false;
+    }
+
+    public void AddNote() {
+        AddBoxVisibility = true;
+        isEdit = false;
+    }
+
+    public void DeleteNote(string Id) {
+        NotesController.RemoveNote(Id);
+    }
+
+    public void EditNote(string Id) {
+        isEdit = true;
+        NewNote = NotesController.GetNote(Id);
+        AddBoxVisibility = true;
+    }
+}

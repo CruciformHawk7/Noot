@@ -1,0 +1,62 @@
+﻿ <header>
+    <nav>
+        <div class="logo">
+            <svg width="36px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                <g class="fa-group">
+                    <path fill="#ffef00" 
+                        d="M448 352H336a16 16 0 0 0-16 16v112H24a23.94 23.94 0 0 1-24-23.88V56a23.94 23.94 0 0 1 23.88-24H424a23.94 23.94 0 0 1 24 23.88V352z" 
+                        class="fa-secondary">
+                    </path>
+                    <path fill="#ddcd00" d="M320 480V368a16 16 0 0 1 16-16h112v6.1a23.9 23.9 0 0 1-7 16.9l-98 98a24 24 0 0 1-17 7z" 
+                        class="fa-primary">
+                    </path>
+                </g>
+            </svg> Noot.
+        </div>
+        <div class="search-box">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="hamboiga">
+                <path fill="var(--nofocus-text)" 
+                    d="M442 114H6a6 6 0 0 1-6-6V84a6 6 0 0 1 6-6h436a6 6 0 0 1 6 6v24a6 6 0 0 1-6 6zm0 160H6a6 6 0 0 1-6-6v-24a6 6 0 0 1 6-6h436a6 6 0 0 1 6 6v24a6 6 0 0 1-6 6zm0 160H6a6 6 0 0 1-6-6v-24a6 6 0 0 1 6-6h436a6 6 0 0 1 6 6v24a6 6 0 0 1-6 6z">
+                </path>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="find">
+                <path fill="currentColor" 
+                    d="M508.5 481.6l-129-129c-2.3-2.3-5.3-3.5-8.5-3.5h-10.3C395 312 416 262.5 416 208 416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c54.5 0 104-21 141.1-55.2V371c0 3.2 1.3 6.2 3.5 8.5l129 129c4.7 4.7 12.3 4.7 17 0l9.9-9.9c4.7-4.7 4.7-12.3 0-17zM208 384c-97.3 0-176-78.7-176-176S110.7 32 208 32s176 78.7 176 176-78.7 176-176 176z" >
+                </path>
+            </svg>
+            <input type="text" placeholder="Search Noot" class="search" 
+                @bind="@SearchText" @oninput="OnSearchTextChanged" />
+        </div>
+        <div class="add-area">
+            <button class="add-btn" @onclick="AddClicked">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" width="15px">
+                        <path fill="#000" 
+                            d="M376 232H216V72c0-4.42-3.58-8-8-8h-32c-4.42 0-8 3.58-8 8v160H8c-4.42 0-8 3.58-8 8v32c0 4.42 3.58 8 8 8h160v160c0 4.42 3.58 8 8 8h32c4.42 0 8-3.58 8-8V280h160c4.42 0 8-3.58 8-8v-32c0-4.42-3.58-8-8-8z">
+                        </path>
+                    </svg>
+                    <div>Add a note</div>
+                </div>
+            </button>
+        </div>
+        <div class="user-details">
+            Login
+        </div>
+    </nav>
+</header>
+
+@code {
+    [Parameter]
+    public EventCallback AddClicked { get; set; }
+
+    [Parameter]
+    public string SearchText { get; set; }
+
+    [Parameter]
+    public EventCallback<string> SearchTextChanged { get; set; }
+
+    private Task OnSearchTextChanged(ChangeEventArgs e) {
+        SearchText = e.Value.ToString();
+        return SearchTextChanged.InvokeAsync(SearchText);
+    }
+}
