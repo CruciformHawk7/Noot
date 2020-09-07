@@ -1,7 +1,8 @@
 ﻿@page "/"
 @page "/{AnyPath}"
-@using Noot.Components;
+@inject Blazored.LocalStorage.ISyncLocalStorageService LocalStorage
 @using Controllers;
+@using Noot.Components;
 @using Models;
 
 <NavMenu AddClicked="AddNote" @bind-SearchText="@SearchText" />
@@ -40,7 +41,7 @@
     </div>
 </section>
 
-@if (NotesController.GetAllNotes().Count == 0 && Notes.Count == 0) { 
+@if (_notesController.GetAllNotes().Count == 0 && Notes.Count == 0) { 
     <div style="display: flex; justify-content: center; align-content: center; margin-top: 5rem;">
     <h2 style="margin-right: 10px">
         You don't have any notes. 
@@ -76,6 +77,8 @@
 
     List<Note> Notes = new List<Note>();
 
+    NotesController _notesController;
+
     private string _search = String.Empty;
 
     public bool AddBoxVisibility = false;
@@ -93,28 +96,29 @@
         set {
             _search = value;
             //isSearch = String.IsNullOrEmpty(value);
-            Notes = NotesController.GetAllNotes()
+            Notes = _notesController.GetAllNotes()
                     .FindAll( e => e.Title.Contains(value, StringComparison.OrdinalIgnoreCase) 
                                 || e.Notes.Contains(value, StringComparison.OrdinalIgnoreCase));
         }
     }
     
-    protected override void OnInitialized(){
-        //Test();
-        Notes = NotesController.GetAllNotes();
+    protected override void OnInitialized() {
+        var notes = LocalStorage.GetItem<List<Note>>("notes");
+        _notesController = new NotesController(notes, LocalStorage);
+        Notes = _notesController.GetAllNotes();
     }
 
     void Test() {
         for(int i = 0; i<10; i++) {
-            NotesController.CreateNewNote($"Test {i}", $"Test {i}");
+            _notesController.CreateNewNote($"Test {i}", $"Test {i}");
         }
     }
 
     void AddValue() {
         if (isEdit) 
-            NotesController.EditNote(NewNote.Id, NewNote.Title, NewNote.Notes);
+            _notesController.EditNote(NewNote.Id, NewNote.Title, NewNote.Notes);
         else {
-            NotesController.CreateNewNote(NewNote.Title, NewNote.Notes);
+            _notesController.CreateNewNote(NewNote.Title, NewNote.Notes);
         }
         NewNote = new Note();
         AddBoxVisibility = false;
@@ -126,12 +130,13 @@
     }
 
     public void DeleteNote(string Id) {
-        NotesController.RemoveNote(Id);
+        _notesController.RemoveNote(Id);
     }
 
     public void EditNote(string Id) {
         isEdit = true;
-        NewNote = NotesController.GetNote(Id);
+        NewNote = _notesController.GetNote(Id);
         AddBoxVisibility = true;
     }
+
 }
