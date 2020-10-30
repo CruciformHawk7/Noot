@@ -28,3 +28,4 @@ jobs:
       with:
         publish_dir: 'rel/wwwroot' 
         personal_token: ${{ secrets.ACCESS_TOKEN }}
+        enable_jekyll: false
